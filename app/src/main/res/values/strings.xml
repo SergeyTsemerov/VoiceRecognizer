@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">VoiceRecognizer</string>
+    <string name="text">Text</string>
 </resources>
