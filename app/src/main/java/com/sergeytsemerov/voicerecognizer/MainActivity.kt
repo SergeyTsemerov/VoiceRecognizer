@@ -30,22 +30,34 @@ class MainActivity : AppCompatActivity() {
                 val spokenText =
                     result.data?.let { arrayListOf(it.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)) }
                 if (spokenText != null) {
-                    binding.editText.setText(spokenText[0].toString().removeSurrounding(PREFIX_BRACE, SUFFIX_BRACE))
+                    binding.editText.setText(
+                        spokenText[0].toString().removeSurrounding(PREFIX_BRACE, SUFFIX_BRACE)
+                    )
                 }
             }
         }
+    private var permissionToRecordAccepted = false
+    private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionToRecordAccepted = if (requestCode == RECORD_AUDIO_REQUEST_CODE) {
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        } else {
+            false
+        }
+        if (!permissionToRecordAccepted) finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ActivityCompat.requestPermissions(this, permissions, RECORD_AUDIO_REQUEST_CODE)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            checkForPermission()
-        }
         model.init(textToSpeech, launchActivity)
         with(binding) {
             playButton.setOnClickListener {
@@ -58,14 +70,6 @@ class MainActivity : AppCompatActivity() {
                 model.showSpeechRecognizer()
             }
         }
-    }
-
-    private fun checkForPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.RECORD_AUDIO),
-            RECORD_AUDIO_REQUEST_CODE
-        )
     }
 
     companion object {
